@@ -1,0 +1,5 @@
+assets/*
+docker/*
+output/*
+pretrained_models/*
+tensorboard/*
