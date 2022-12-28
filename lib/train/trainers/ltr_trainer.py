@@ -66,12 +66,12 @@ class LTRTrainer(BaseTrainer):
     def cycle_dataset(self, loader):
         """Do a cycle of training or validation."""
 
-        self.actor.train(loader.training)
+        self.actor.train(loader.training)     # 设置为train mode
         torch.set_grad_enabled(loader.training)
 
-        self._init_timing()
+        self._init_timing()           # 初始化时间
 
-        for i, data in enumerate(loader, 1):
+        for i, data in enumerate(loader, 1): 
             self.data_read_done_time = time.time()
             # get inputs
             if self.move_data_to_gpu:
@@ -108,6 +108,7 @@ class LTRTrainer(BaseTrainer):
             batch_size = data['template_images'].shape[loader.stack_dim]
             self._update_stats(stats, batch_size, loader)
 
+
             # print statistics
             self._print_stats(i, loader, batch_size)
 
@@ -115,6 +116,7 @@ class LTRTrainer(BaseTrainer):
             if self.wandb_writer is not None and i % self.settings.print_interval == 0:
                 if self.settings.local_rank in [-1, 0]:
                     self.wandb_writer.write_log(self.stats, self.epoch)
+            
 
         # calculate ETA after every epoch
         epoch_time = self.prev_time - self.start_time

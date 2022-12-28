@@ -1,3 +1,4 @@
+import _init_paths
 import os
 import sys
 import time
@@ -129,7 +130,7 @@ class VisResults(object):
 
 if __name__ == '__main__':
     viser = VisResults()
-    dataset_name = 'lasot'
+    dataset_name = 'mdot_test'
 
     trackers = []
     # trackers.extend(trackerlist('defor_stark_s', 'baseline_got10k_only', None, 'defor_stark'))
@@ -161,13 +162,16 @@ if __name__ == '__main__':
     # trackers.extend(trackerlist('stark_mem', 'baseline_roi_ciou', dataset_name, None, 'update_template'))
     # trackers.extend(trackerlist('stark_mem', 'baseline_roi_ciou', dataset_name, 1, 'update_template'))
 
-    trackers.extend(trackerlist('stark_mem', 'baseline_roi_ep500', dataset_name, None, 'baseline_roi_ep500'))
+    # trackers.extend(trackerlist('stark_mem', 'baseline_roi_ep500', dataset_name, None, 'baseline_roi_ep500'))
 
-    trackers.extend(trackerlist('vit_tracker', 'cait_small_224_ep300', dataset_name, None, 'cait_small_224_ep300'))
-    trackers.extend(trackerlist('vit_tracker', 'cait_small_224_fcos_new_32x4_ep300', dataset_name, None, 'cait_small_224_fcos_new_32x4_ep300'))
-    trackers.extend(trackerlist('vit_tracker', 'cait_small_224_fcos_cn_32x4_ep300_test_cn', dataset_name, None, 'cait_small_224_fcos_cn_32x4_ep300_test_cn'))
+    # trackers.extend(trackerlist('vit_tracker', 'cait_small_224_ep300', dataset_name, None, 'cait_small_224_ep300'))
+    # trackers.extend(trackerlist('vit_tracker', 'cait_small_224_fcos_new_32x4_ep300', dataset_name, None, 'cait_small_224_fcos_new_32x4_ep300'))
+    # trackers.extend(trackerlist('vit_tracker', 'cait_small_224_fcos_cn_32x4_ep300_test_cn', dataset_name, None, 'cait_small_224_fcos_cn_32x4_ep300_test_cn'))
     # trackers.extend(trackerlist('vit_tracker', 'cait_small_224_vfloss_64x2_ep100', dataset_name, None, 'cait_small_224_vfloss_64x2_ep100'))
     # trackers.extend(trackerlist('vit_tracker', 'cait_small_224_fcos_cn_32x4_ep300_retest', dataset_name, None, 'retest'))
+    trackers.extend(trackerlist(name='ostrack', parameter_name='vitb_384_mae_ce_32x4_ep300', dataset_name=dataset_name,
+                            run_ids=None, display_name='OSTrack384'))
+
 
     dataset = get_dataset(dataset_name)
 

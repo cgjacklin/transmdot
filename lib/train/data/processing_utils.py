@@ -27,7 +27,7 @@ def sample_target(im, target_bb, search_area_factor, output_sz=None, mask=None):
     else:
         x, y, w, h = target_bb
     # Crop image
-    crop_sz = math.ceil(math.sqrt(w * h) * search_area_factor)
+    crop_sz = math.ceil(math.sqrt(w * h) * search_area_factor)       # 像素值开根号 * 搜索factor
 
     if crop_sz < 1:
         raise Exception('Too small bounding box.')

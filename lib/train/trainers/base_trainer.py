@@ -193,7 +193,7 @@ class BaseTrainer:
         # Load network
         checkpoint_dict = torch.load(checkpoint_path, map_location='cpu')
 
-        #assert net_type == checkpoint_dict['net_type'], 'Network is not of correct type.'             ######暂时先删了
+        #assert net_type == checkpoint_dict['net_type'], 'Network is not of correct type.'            ########### 这玩意直接注释了不知道有没有用
 
         if fields is None:
             fields = checkpoint_dict.keys()

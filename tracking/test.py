@@ -8,7 +8,7 @@ if prj_path not in sys.path:
 
 from lib.test.evaluation import get_dataset
 from lib.test.evaluation.running import run_dataset
-from lib.test.evaluation.running import run_mdot_dataset
+from lib.test.evaluation.running import run_mdot_dataset, run_mdot_dataset_three
 from lib.test.evaluation.tracker import Tracker
 
 
@@ -26,14 +26,16 @@ def run_tracker(tracker_name, tracker_param, run_id=None, dataset_name='otb', se
     """
 
     dataset = get_dataset(dataset_name)
+    
 
     if sequence is not None:
         dataset = [dataset[sequence]]
 
     trackers = [Tracker(tracker_name, tracker_param, dataset_name, run_id)]
 
-    #run_dataset(dataset, trackers, debug, threads, num_gpus=num_gpus)
-    run_mdot_dataset(dataset, trackers, debug, threads, num_gpus=num_gpus)
+    #run_dataset(dataset, trackers, debug, threads, num_gpus=num_gpus)  # 单机
+    #run_mdot_dataset(dataset, trackers, debug, threads, num_gpus=num_gpus)  # 双机
+    run_mdot_dataset_three(dataset, trackers, debug, threads, num_gpus=num_gpus)  # 三机
 
 
 def main():

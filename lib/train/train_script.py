@@ -10,9 +10,9 @@ from torch.nn.parallel import DistributedDataParallel as DDP
 # some more advanced functions
 from .base_functions import *
 # network related
-from lib.models.ostrack import build_ostrack
+from lib.models.ostrack import build_ostrack, build_ostrack_three
 # forward propagation related
-from lib.train.actors import OSTrackActor, OSTrackActorMDOT
+from lib.train.actors import OSTrackActor, OSTrackActorMDOT, OSTrackActorThreeMDOT
 # for import modules
 import importlib
 
@@ -45,8 +45,15 @@ def run(settings):
     settings.log_file = os.path.join(log_dir, "%s-%s.log" % (settings.script_name, settings.config_name))
 
     # Build dataloaders
-    #loader_train, loader_val = build_dataloaders(cfg, settings)
-    loader_train, loader_val = build_dataloaders_mdot(cfg, settings)          #  换成双模板的dataloader
+    if settings.script_name == "ostrack":
+        loader_train, loader_val = build_dataloaders(cfg, settings)
+        #loader_train, loader_val = build_dataloaders_mdot(cfg, settings)          #  换成双模板的dataloader
+    elif settings.script_name == "threemdot":
+        loader_train, loader_val = build_dataloaders_threemdot(cfg, settings)          #  换成三模板的dataloader
+    else:
+        raise ValueError("illegal script name")
+    
+    
 
     if "RepVGG" in cfg.MODEL.BACKBONE.TYPE or "swin" in cfg.MODEL.BACKBONE.TYPE or "LightTrack" in cfg.MODEL.BACKBONE.TYPE:
         cfg.ckpt_dir = settings.save_dir
@@ -54,6 +61,8 @@ def run(settings):
     # Create network
     if settings.script_name == "ostrack":
         net = build_ostrack(cfg)              # 创建ostrack，包含vit_ce_mdot和head
+    elif settings.script_name == "threemdot":
+        net = build_ostrack_three(cfg)              # 创建threemdot
     else:
         raise ValueError("illegal script name")
 
@@ -73,8 +82,14 @@ def run(settings):
         focal_loss = FocalLoss()
         objective = {'giou': giou_loss, 'l1': l1_loss, 'focal': focal_loss, 'cls': BCEWithLogitsLoss()}
         loss_weight = {'giou': cfg.TRAIN.GIOU_WEIGHT, 'l1': cfg.TRAIN.L1_WEIGHT, 'focal': 1., 'cls': 1.0}
-        #actor = OSTrackActor(net=net, objective=objective, loss_weight=loss_weight, settings=settings, cfg=cfg)
-        actor = OSTrackActorMDOT(net=net, objective=objective, loss_weight=loss_weight, settings=settings, cfg=cfg)    # 双模板的actor
+        actor = OSTrackActor(net=net, objective=objective, loss_weight=loss_weight, settings=settings, cfg=cfg)
+        #actor = OSTrackActorMDOT(net=net, objective=objective, loss_weight=loss_weight, settings=settings, cfg=cfg)    # 双模板的actor
+
+    elif settings.script_name == "threemdot":
+        focal_loss = FocalLoss()
+        objective = {'giou': giou_loss, 'l1': l1_loss, 'focal': focal_loss, 'cls': BCEWithLogitsLoss()}
+        loss_weight = {'giou': cfg.TRAIN.GIOU_WEIGHT, 'l1': cfg.TRAIN.L1_WEIGHT, 'focal': 1., 'cls': 1.0}
+        actor = OSTrackActorThreeMDOT(net=net, objective=objective, loss_weight=loss_weight, settings=settings, cfg=cfg)    # 三模板的actor
     else:
         raise ValueError("illegal script name")
 

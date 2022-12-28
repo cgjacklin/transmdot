@@ -77,11 +77,11 @@ def run_training(script_name, config_name, cudnn_benchmark=True, local_rank=-1, 
 
 def main():
     parser = argparse.ArgumentParser(description='Run a train scripts in train_settings.')
-    parser.add_argument('--script', type=str, required=True, help='Name of the train script.')
+    parser.add_argument('--script', default='ostrack',type=str, required=True, help='Name of the train script.')
     parser.add_argument('--config', type=str, required=True, help="Name of the config file.")
     parser.add_argument('--cudnn_benchmark', type=bool, default=True, help='Set cudnn benchmark on (1) or off (0) (default is on).')
     parser.add_argument('--local_rank', default=-1, type=int, help='node rank for distributed training')
-    parser.add_argument('--save_dir', type=str, help='the directory to save checkpoints and logs')
+    parser.add_argument('--save_dir',default="/home/chenguanlin/OSTrack-main/output/", type=str, help='the directory to save checkpoints and logs')
     parser.add_argument('--seed', type=int, default=42, help='seed for random numbers')
     parser.add_argument('--use_lmdb', type=int, choices=[0, 1], default=0)  # whether datasets are in lmdb format
     parser.add_argument('--script_prv', type=str, default=None, help='Name of the train script of previous model.')

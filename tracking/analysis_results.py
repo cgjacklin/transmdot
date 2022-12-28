@@ -26,20 +26,69 @@ dataset_name = 'mdot_test'
 # trackers.extend(trackerlist('dimp', 'prdimp18', None, range(0,5), 'PrDiMP18'))
 # trackers.extend(trackerlist('dimp', 'prdimp50', None, range(0,5), 'PrDiMP50'))
 """ostrack"""
-# trackers.extend(trackerlist(name='ostrack', parameter_name='vitb_256_mae_ce_32x4_ep300_fin30', dataset_name=dataset_name,
-#                             run_ids=None, display_name='OSTrack256_fin30'))
-# trackers.extend(trackerlist(name='ostrack', parameter_name='vitb_384_mae_ce_32x4_ep300_fin', dataset_name=dataset_name,
-#                             run_ids=None, display_name='OSTrack384'))
 # trackers.extend(trackerlist(name='ostrack', parameter_name='vitb_384_mae_ce_32x4_ep300', dataset_name=dataset_name,
 #                             run_ids=None, display_name='OSTrack384'))
 
-trackers.extend(trackerlist(name='ostrack', parameter_name='MDOT/vitb_384_mae_ce_32x4_ep300_fin30_baseline', dataset_name=dataset_name,
-                            run_ids=None, display_name='OSTrack384_ori'))
+# trackers.extend(trackerlist(name='ostrack', parameter_name='vitb_384_mae_ce_32x4_ep300_baseline', dataset_name=dataset_name,
+#                             run_ids=None, display_name='OSTrack384_baseline'))
 
-# trackers.extend(trackerlist(name='ostrack', parameter_name='vitb_384_mae_ce_32x4_ep300_all_fin30', dataset_name=dataset_name,
-#                             run_ids=None, display_name='OSTrack384_all_fin30'))
-trackers.extend(trackerlist(name='ostrack', parameter_name='vitb_384_mae_ce_32x4_ep300_mdot_train_best20_49.72', dataset_name=dataset_name,
-                            run_ids=None, display_name='OSTrack384_all_fin30'))
+# trackers.extend(trackerlist(name='ostrack', parameter_name='vitb_384_mae_ce_32x4_ep300_mdot', dataset_name=dataset_name,
+#                             run_ids=None, display_name='OSTrack384_mdot'))
+
+# trackers.extend(trackerlist(name='ostrack', parameter_name='vitb_384_mae_ce_32x4_ep300_fin30_baseline', dataset_name=dataset_name,
+#                             run_ids=None, display_name='OSTrack384_fin30_baseline'))
+
+# trackers.extend(trackerlist(name='ostrack', parameter_name='vitb_384_mae_ce_32x4_ep300_fin30_mdot', dataset_name=dataset_name,
+#                             run_ids=None, display_name='OSTrack384_fin30_mdot'))
+
+
+# trackers.extend(trackerlist(name='ostrack', parameter_name='vitb_384_mae_ce_32x4_ep300_mdot2s', dataset_name=dataset_name,
+#                             run_ids=None, display_name='OSTrack384_mdot2s'))
+
+# trackers.extend(trackerlist(name='ostrack', parameter_name='vitb_384_mae_ce_32x4_ep300_fin30_mdot2s', dataset_name=dataset_name,
+#                             run_ids=None, display_name='OSTrack384_fin30_mdot2s'))
+
+# trackers.extend(trackerlist(name='ostrack', parameter_name='vitb_384_mae_ce_32x4_ep300_mdot_train_15', dataset_name=dataset_name,
+#                             run_ids=None, display_name='OSTrack384_mdot_train_15'))
+
+# trackers.extend(trackerlist(name='ostrack', parameter_name='vitb_384_mae_ce_32x4_ep300_mdot_train_30', dataset_name=dataset_name,
+#                             run_ids=None, display_name='OSTrack384_mdot_train_30'))
+
+# trackers.extend(trackerlist(name='ostrack', parameter_name='vitb_384_mae_ce_32x4_ep300_mdot_train_45', dataset_name=dataset_name,
+#                             run_ids=None, display_name='OSTrack384_mdot_train_45'))
+
+# trackers.extend(trackerlist(name='ostrack', parameter_name='vitb_384_mae_ce_32x4_ep300_mdot_train_30fin', dataset_name=dataset_name,
+#                             run_ids=None, display_name='OSTrack384_mdot_train_30fin'))
+
+# trackers.extend(trackerlist(name='ostrack', parameter_name='vitb_384_mae_ce_32x4_ep300_mdot_train_xin20', dataset_name=dataset_name,                  # 当前最高49.72， 59.15
+#                             run_ids=None, display_name='OSTrack384_mdot_train_xin20'))
+
+# trackers.extend(trackerlist(name='ostrack', parameter_name='vitb_384_mae_ce_32x4_ep300_mdot_train_xin30', dataset_name=dataset_name,            
+#                             run_ids=None, display_name='OSTrack384_mdot_train_xin30'))
+
+trackers.extend(trackerlist(name='ostrack', parameter_name='useful/vitb_384_mae_ce_32x4_ep300_20_49.00', dataset_name=dataset_name,                  # baseline 49.00
+                            run_ids=None, display_name='OSTrack384_20_49.00'))
+
+trackers.extend(trackerlist(name='ostrack', parameter_name='useful/vitb_384_mae_ce_32x4_ep300_mdot_train_best20_49.72_49.52', dataset_name=dataset_name,                  # baseline 49.00
+                            run_ids=None, display_name='OSTrack384_20_49.52'))
+
+trackers.extend(trackerlist(name='ostrack', parameter_name='multi_matching/vitb_384_mae_ce_32x4_ep300_mdot_train_best20_49.72_50.30', dataset_name=dataset_name,                  
+                            run_ids=None, display_name='OSTrack384_mdot_train_best_49.72_50.30'))
+
+trackers.extend(trackerlist(name='ostrack', parameter_name='multi_matching/multi/vitb_384_mae_ce_32x4_ep300_mdot_train_best20_49.72_50.37', dataset_name=dataset_name,                  
+                            run_ids=None, display_name='OSTrack384_mdot_train_best_49.72_50.37'))
+
+trackers.extend(trackerlist(name='ostrack', parameter_name='multi_matching/multi/vitb_384_mae_ce_32x4_ep300_mdot_train_best20_49.72_double_50.58', dataset_name=dataset_name,                  
+                            run_ids=None, display_name='OSTrack384_mdot_train_best_49.72_double_50.58'))
+
+trackers.extend(trackerlist(name='ostrack', parameter_name='multi_matching/double_center/vitb_384_mae_ce_32x4_ep300_mdot_train_best20_49.72_50.75', dataset_name=dataset_name,              # 50.75但是融合结果较低    
+                            run_ids=None, display_name='OSTrack384_mdot_train_best_49.72_double_center_50.75'))
+
+trackers.extend(trackerlist(name='ostrack', parameter_name='vitb_384_mae_ce_32x4_ep300_mdot_train_best20_49.72_50.84', dataset_name=dataset_name,                
+                            run_ids=None, display_name='OSTrack384_mdot_train_best_49.72_50.84'))
+
+trackers.extend(trackerlist(name='ostrack', parameter_name='vitb_384_mae_ce_32x4_ep300_mdot_train_best20_49.72_double', dataset_name=dataset_name,                  
+                            run_ids=None, display_name='OSTrack384_mdot_train_best_49.72_double'))
 
 dataset = get_dataset(dataset_name)
 # dataset = get_dataset('otb', 'nfs', 'uav', 'tc128ce')

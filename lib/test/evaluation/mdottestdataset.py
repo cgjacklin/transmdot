@@ -59,7 +59,7 @@ class LaSOTDataset(BaseDataset):
     def __len__(self):
         return len(self.sequence_list)
 
-    def _get_sequence_list(self):
+    def _get_sequence_list(self):             # 必须按顺序放，因为代码里给排序了
         sequence_list = [
                         'md2001-1',
                         'md2002-1',

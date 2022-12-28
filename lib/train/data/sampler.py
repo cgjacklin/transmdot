@@ -110,7 +110,7 @@ class TrackingSampler(torch.utils.data.Dataset):
             is_video_dataset = dataset.is_video_sequence()
 
             # sample a sequence from the given dataset
-            seq_id, visible, seq_info_dict = self.sample_seq_from_dataset(dataset, is_video_dataset)
+            seq_id, visible, seq_info_dict = self.sample_seq_from_dataset(dataset, is_video_dataset)     # 从数据集中随机挑选了一个sequence
 
             if is_video_dataset:
                 template_frame_ids = None
@@ -150,7 +150,7 @@ class TrackingSampler(torch.utils.data.Dataset):
                 search_frames, search_anno, meta_obj_test = dataset.get_frames(seq_id, search_frame_ids, seq_info_dict)
 
                 H, W, _ = template_frames[0].shape
-                template_masks = template_anno['mask'] if 'mask' in template_anno else [torch.zeros((H, W))] * self.num_template_frames
+                template_masks = template_anno['mask'] if 'mask' in template_anno else [torch.zeros((H, W))] * self.num_template_frames     
                 search_masks = search_anno['mask'] if 'mask' in search_anno else [torch.zeros((H, W))] * self.num_search_frames
 
                 data = TensorDict({'template_images': template_frames,

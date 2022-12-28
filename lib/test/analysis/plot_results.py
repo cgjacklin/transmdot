@@ -6,7 +6,7 @@ import torch
 import pickle
 import json
 from lib.test.evaluation.environment import env_settings
-from lib.test.analysis.extract_results import extract_results
+from lib.test.analysis.extract_results import extract_results, fuse_extract_results, three_fuse_extract_results
 
 
 def get_plot_draw_styles():
@@ -166,31 +166,37 @@ def plot_draw_save(y, x, scores, trackers, plot_draw_styles, result_plot_path, p
     fig.savefig('{}/{}_plot.pdf'.format(result_plot_path, plot_type), dpi=300, format='pdf', transparent=True)
     plt.draw()
 
-
+# 如果以前算过这次就不算了
 def check_and_load_precomputed_results(trackers, dataset, report_name, force_evaluation=False, **kwargs):
     # Load data
     settings = env_settings()
+
 
     # Load pre-computed results
     result_plot_path = os.path.join(settings.result_plot_path, report_name)
     eval_data_path = os.path.join(result_plot_path, 'eval_data.pkl')
 
-    if os.path.isfile(eval_data_path) and not force_evaluation:
-        with open(eval_data_path, 'rb') as fh:
-            eval_data = pickle.load(fh)
-    else:
-        # print('Pre-computed evaluation data not found. Computing results!')
-        eval_data = extract_results(trackers, dataset, report_name, **kwargs)
+    # if os.path.isfile(eval_data_path) and not force_evaluation:
+    #     with open(eval_data_path, 'rb') as fh:
+    #         eval_data = pickle.load(fh)
+    # else:
+    #     # print('Pre-computed evaluation data not found. Computing results!')
+    #     eval_data = extract_results(trackers, dataset, report_name, **kwargs)
 
-    if not check_eval_data_is_valid(eval_data, trackers, dataset):
-        # print('Pre-computed evaluation data invalid. Re-computing results!')
-        eval_data = extract_results(trackers, dataset, report_name, **kwargs)
-        # pass
-    else:
-        # Update display names
-        tracker_names = [{'name': t.name, 'param': t.parameter_name, 'run_id': t.run_id, 'disp_name': t.display_name}
-                         for t in trackers]
-        eval_data['trackers'] = tracker_names
+    # if not check_eval_data_is_valid(eval_data, trackers, dataset):
+    #     # print('Pre-computed evaluation data invalid. Re-computing results!')
+    #     eval_data = extract_results(trackers, dataset, report_name, **kwargs)
+    #     # pass
+    # else:
+    #     # Update display names
+    #     tracker_names = [{'name': t.name, 'param': t.parameter_name, 'run_id': t.run_id, 'disp_name': t.display_name}
+    #                      for t in trackers]
+    #     eval_data['trackers'] = tracker_names
+
+    #eval_data = extract_results(trackers, dataset, report_name, **kwargs)
+    eval_data = fuse_extract_results(trackers, dataset, report_name, **kwargs)           ########## 执行融合双击的结果
+    #eval_data = three_fuse_extract_results(trackers, dataset, report_name, **kwargs)           ########## 执行融合三机的结果
+
     with open(eval_data_path, 'wb') as fh:
         pickle.dump(eval_data, fh)
     return eval_data

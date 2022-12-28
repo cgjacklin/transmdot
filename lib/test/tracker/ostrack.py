@@ -267,6 +267,7 @@ class OSTrack(BaseTracker):
             # run the transformer
             out_dict = self.network.forward(                  # 在forward这里要把两个模板传进去
                 template=self.z_dict1.tensors, template2=self.z_dict2.tensors, search=x_dict.tensors, ce_template_mask=self.box_mask_z)
+                #template=self.z_dict1.tensors, template2=self.z_dict1.tensors, search=x_dict.tensors, ce_template_mask=self.box_mask_z)      # 无多模板
 
         # add hann windows
         pred_score_map = out_dict['score_map']
@@ -320,14 +321,14 @@ class OSTrack(BaseTracker):
 
 
     # 将B机搜索区域在A机中查询，然后重检测
-    def search_redetect(self, image_a, image_b, drone_id, state_b, info_a: dict = None, info_b: dict = None):       
+    def search_redetect(self, image_a, image_b, drone_id, state_b, tmp_factor = 4.0, tmp_s_factor = 12.0, info_a: dict = None, info_b: dict = None):       
 
-        print(drone_id, "机丢失，正在redetection")
+        print(drone_id, "机丢失， cross redetect")
 
         H, W, _ = image_a.shape
         #self.frame_id += 1
-        tmp_factor = 4.0
-        tmp_s_factor = 12.0
+        
+        
 
         x_patch_arr_b, resize_factor_b, x_amask_arr_b = sample_target(image_b, state_b, tmp_factor,
                                                                 output_sz=self.params.template_size)  # (x1, y1, w, h)     # 将B的搜索区域裁出来
@@ -335,7 +336,7 @@ class OSTrack(BaseTracker):
 
         search_b = self.preprocessor.process(x_patch_arr_b, x_amask_arr_b)
 
-        print("before: ", self.state)
+        #print("before: ", self.state)
         x_patch_arr, resize_factor, x_amask_arr = sample_target(image_a, self.state, tmp_s_factor,
                                                                 output_sz=self.params.search_size)  # (x1, y1, w, h)     # 以目标框为中心划定A的搜索区域
 
@@ -355,8 +356,11 @@ class OSTrack(BaseTracker):
         #response_APCE = self.calAPCE(response)                # 计算平均峰值能量APCE
 
         pred_boxes, max_score = self.network.box_head.cal_bbox(pred_score_map, out_dict['size_map'], out_dict['offset_map'], return_score=True)   # 获得最大score
-        print("pred_boxes: ", pred_boxes)
-        print("max score: ", max_score)
+        # print("pred_boxes: ", pred_boxes)
+        # print("max score: ", max_score)
+
+
+
         pred_boxes = pred_boxes.view(-1, 4)
         # Baseline: Take the mean of all pred boxes as the final result
         pred_box = (pred_boxes.mean(
@@ -364,7 +368,7 @@ class OSTrack(BaseTracker):
         # get the final box result
         self.state = clip_box(self.map_box_back(pred_box, resize_factor), H, W, margin=10)
 
-        print("after: ", self.state)
+        #print("after: ", self.state)
         # for debug
         if self.debug:
             if not self.use_visdom:
@@ -393,6 +397,155 @@ class OSTrack(BaseTracker):
                         break
 
         self.frame_id -= 1
+        out_t, max_score_t, response_APCE_t = self.multi_Fusetrack(image_a, image_b, drone_id, info_a, info_b)
+
+
+        tmp_state = self.state.copy()         # 保存中间状态
+
+
+
+        ############################# 在center中框个Box ##################################
+        if tmp_s_factor > 8:
+            center_state = tmp_state.copy()
+            center_state[1] , center_state[0] = H/2 , W/2
+            x_patch_arr_ctr, resize_factor_ctr, x_amask_arr_ctr = sample_target(image_a, center_state, tmp_s_factor,
+                                                                    output_sz=self.params.search_size)  # (x1, y1, w, h)     # 以目标框为中心划定A的搜索区域
+            search_ctr = self.preprocessor.process(x_patch_arr_ctr, x_amask_arr_ctr)
+
+            # with torch.no_grad():
+            #     out_dict_ctr_z = self.network.forward(
+            #         template=self.z_dict1.tensors, template2=self.z_dict2.tensors, search=search_ctr.tensors, ce_template_mask=self.box_mask_z)   # 在中间用模板检测
+
+            # pred_score_map_ctr_z = out_dict_ctr_z['score_map']
+            # pred_boxes_ctr_z, max_score_ctr_z = self.network.box_head.cal_bbox(pred_score_map_ctr_z, out_dict_ctr_z['size_map'], out_dict_ctr_z['offset_map'], return_score=True)   # 获得最大score
+
+            with torch.no_grad():
+                out_dict_ctr = self.network.forward(                 
+                    template=search_b.tensors, template2=search_b.tensors, search=search_ctr.tensors, ce_template_mask=self.box_mask_z)   # 在中间用搜索区域检测
+            pred_score_map_ctr = out_dict_ctr['score_map']
+            pred_boxes_ctr, max_score_ctr = self.network.box_head.cal_bbox(pred_score_map_ctr, out_dict_ctr['size_map'], out_dict_ctr['offset_map'], return_score=True)   # 获得最大score
+
+            
+
+            if (max_score_ctr - max_score) > 0.1:
+                print("使用了中心框")
+                print(max_score_ctr)
+                print(max_score)
+                # if (max_score_ctr - max_score_ctr_z) > 0:
+
+                pred_boxes_ctr = pred_boxes_ctr.view(-1, 4)
+                pred_box_ctr = (pred_boxes_ctr.mean(
+                    dim=0) * self.params.search_size / resize_factor_ctr).tolist()  # (cx, cy, w, h) [0,1]
+                self.state = clip_box(self.map_box_back(pred_box_ctr, resize_factor_ctr), H, W, margin=10)
+
+                self.frame_id -= 1
+                out_ctr, max_score_ctr, response_APCE_ctr = self.multi_Fusetrack(image_a, image_b, drone_id, info_a, info_b)
+
+
+                if max_score_ctr > max_score_t:
+                    return out_ctr, max_score_ctr, response_APCE_ctr
+                else:
+                    self.state = tmp_state
+    
+
+        ##################################################################################
+
+
+        # if self.save_all_boxes:
+        #     '''save all predictions'''
+        #     all_boxes = self.map_box_back_batch(pred_boxes * self.params.search_size / resize_factor, resize_factor)
+        #     all_boxes_save = all_boxes.view(-1).tolist()  # (4N, )
+        #     return {"target_bbox": self.state,
+        #             "all_boxes": all_boxes_save}
+        # else:
+        return out_t, max_score_t, response_APCE_t
+
+
+# general 重检测
+    def general_redetect(self, image_a, image_b, drone_id, tmp_s_factor = 7.0, info_a: dict = None, info_b: dict = None):       
+
+        print(drone_id, "机丢失， general redetect")
+
+        H, W, _ = image_a.shape
+        #self.frame_id += 1
+        
+
+        #print("before: ", self.state)
+        x_patch_arr, resize_factor, x_amask_arr = sample_target(image_a, self.state, tmp_s_factor,
+                                                                output_sz=self.params.search_size)  # (x1, y1, w, h)     # 以目标框为中心划定A的搜索区域
+
+        search_a = self.preprocessor.process(x_patch_arr, x_amask_arr)
+
+        with torch.no_grad():
+            #x_dict = search
+            # merge the template and the search
+            # run the transformer
+            out_dict = self.network.forward(                  # 在forward这里要把两个模板传进去
+                template=self.z_dict1.tensors, template2=self.z_dict2.tensors, search=search_a.tensors, ce_template_mask=self.box_mask_z)
+
+        # add hann windows
+        pred_score_map = out_dict['score_map']
+        #response = self.output_window * pred_score_map
+
+        #response_APCE = self.calAPCE(response)                # 计算平均峰值能量APCE
+
+        pred_boxes, max_score = self.network.box_head.cal_bbox(pred_score_map, out_dict['size_map'], out_dict['offset_map'], return_score=True)   # 获得最大score
+
+
+        ############################# 在center中框个Box ##################################
+        center_state = self.state
+        center_state[1] , center_state[0] = H/2 , W/2
+        x_patch_arr_ctr, resize_factor_ctr, x_amask_arr_ctr = sample_target(image_a, center_state, tmp_s_factor,
+                                                                output_sz=self.params.search_size)  # (x1, y1, w, h)     # 以目标框为中心划定A的搜索区域
+        search_ctr = self.preprocessor.process(x_patch_arr_ctr, x_amask_arr_ctr)
+        with torch.no_grad():
+            out_dict_ctr = self.network.forward(                  # 在forward这里要把两个模板传进去
+                template=self.z_dict1.tensors, template2=self.z_dict2.tensors, search=search_ctr.tensors, ce_template_mask=self.box_mask_z)
+        pred_score_map_ctr = out_dict_ctr['score_map']
+        pred_boxes_ctr, max_score_ctr = self.network.box_head.cal_bbox(pred_score_map_ctr, out_dict_ctr['size_map'], out_dict_ctr['offset_map'], return_score=True)   # 获得最大score
+
+        if (max_score_ctr - max_score) > 0:
+            pred_boxes = pred_boxes_ctr
+            max_score = max_score_ctr
+        ##################################################################################
+
+        pred_boxes = pred_boxes.view(-1, 4)
+        # Baseline: Take the mean of all pred boxes as the final result
+        pred_box = (pred_boxes.mean(
+            dim=0) * self.params.search_size / resize_factor).tolist()  # (cx, cy, w, h) [0,1]
+        # get the final box result
+        self.state = clip_box(self.map_box_back(pred_box, resize_factor), H, W, margin=10)
+
+        #print("after: ", self.state)
+        # for debug
+        if self.debug:
+            if not self.use_visdom:
+                x1, y1, w, h = self.state
+                image_BGR = cv2.cvtColor(image_a, cv2.COLOR_RGB2BGR)
+                cv2.rectangle(image_BGR, (int(x1),int(y1)), (int(x1+w),int(y1+h)), color=(0,0,255), thickness=2)
+                save_path = os.path.join(self.save_dir, "%04d.jpg" % self.frame_id)
+                cv2.imwrite(save_path, image_BGR)
+            else:
+                self.visdom.register((image_a, info_a['gt_bbox'].tolist(), self.state), 'Tracking', 1, 'Tracking'+drone_id)
+
+                self.visdom.register(torch.from_numpy(x_patch_arr).permute(2, 0, 1), 'image', 1, 'search_region'+drone_id)
+                self.visdom.register(torch.from_numpy(x_patch_arr_ctr).permute(2, 0, 1), 'image', 1, 'search_region'+drone_id+'center')
+                self.visdom.register(torch.from_numpy(self.z_patch_arr).permute(2, 0, 1), 'image', 1, 'template'+drone_id)
+                self.visdom.register(pred_score_map.view(self.feat_sz, self.feat_sz), 'heatmap', 1, 'score_map'+drone_id)
+                self.visdom.register((pred_score_map * self.output_window).view(self.feat_sz, self.feat_sz), 'heatmap', 1, 'score_map_hann'+drone_id)
+
+                if 'removed_indexes_s' in out_dict and out_dict['removed_indexes_s']:
+                    removed_indexes_s = out_dict['removed_indexes_s']
+                    removed_indexes_s = [removed_indexes_s_i.cpu().numpy() for removed_indexes_s_i in removed_indexes_s]
+                    masked_search = gen_visualization(x_patch_arr, removed_indexes_s)
+                    self.visdom.register(torch.from_numpy(masked_search).permute(2, 0, 1), 'image', 1, 'masked_search'+drone_id)
+
+                while self.pause_mode:
+                    if self.step:
+                        self.step = False
+                        break
+
+        self.frame_id -= 1
         out, max_score, response_APCE = self.multi_Fusetrack(image_a, image_b, drone_id, info_a, info_b)
 
 
@@ -406,6 +559,7 @@ class OSTrack(BaseTracker):
         #             "all_boxes": all_boxes_save}
         # else:
         return out, max_score, response_APCE
+
 
     # 搜索A的搜索区域，融合AB模板, 和AB搜索区域
     def multi_Fusetrack2(self, image_a, image_b, state2, info_a: dict = None, info_b: dict = None):

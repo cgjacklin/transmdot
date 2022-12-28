@@ -21,6 +21,8 @@ class EnvSettings:
         self.davis_dir = ''
         self.youtubevos_dir = ''
         self.mdot_test_path = ''
+        self.threemdot_test_path = ''
+        
 
         self.got_packed_results_path = ''
         self.got_reports_path = ''

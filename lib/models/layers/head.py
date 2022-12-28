@@ -140,7 +140,7 @@ class CenterPredictor(nn.Module, ):
         return score_map_ctr, bbox, size_map, offset_map
 
     def cal_bbox(self, score_map_ctr, size_map, offset_map, return_score=False):
-        max_score, idx = torch.max(score_map_ctr.flatten(1), dim=1, keepdim=True)
+        max_score, idx = torch.max(score_map_ctr.flatten(1), dim=1, keepdim=True)        # keepdim=True代表输出和输入维度一样
         idx_y = idx // self.feat_sz
         idx_x = idx % self.feat_sz
 
