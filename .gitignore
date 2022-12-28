@@ -1,5 +1,5 @@
-assets/*
-docker/*
-output/*
-pretrained_models/*
-tensorboard/*
+assets/
+docker/
+output/
+pretrained_models/
+tensorboard/
