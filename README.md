@@ -1,2 +1,2 @@
-# transmdot
-vit based mdot
+# Official Repository for Transmdot
+
