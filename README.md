@@ -4,7 +4,7 @@ The official implementation for the **TCSVT 2023** paper [Cross-Drone Transforme
 
 [[Models](https://pan.baidu.com/s/1q50wHdW-KJzu0Zfx9BRIOA?pwd=0yj8)] Password:0yj8
 
-The raw results on MDOT are under output/test/tracking_results 。
+The raw results on MDOT are under output/test/tracking_results 
 
 ## Citation
 If our work is useful for your research, please consider cite:
